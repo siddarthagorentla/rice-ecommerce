@@ -124,7 +124,8 @@ The MKRM Rice Team
 const PriceEstimatorService = (() => {
     const estimatePrice = async (riceType, quantity, region, season) => {
         try {
-            const response = await fetch('http://localhost:5006/api/estimate', {
+            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5006';
+            const response = await fetch(`${API_URL}/api/estimate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ riceType, quantity, region, season })
@@ -281,7 +282,8 @@ const Traceability = () => {
         setError('');
         setResult(null);
         try {
-            const response = await fetch(`http://localhost:5006/api/trace/${batchId.trim()}`);
+            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5006';
+            const response = await fetch(`${API_URL}/api/trace/${batchId.trim()}`);
             if (response.ok) {
                 const data = await response.json();
                 setResult(data);
@@ -756,7 +758,8 @@ const Chatbot = ({ products }: ChatbotProps) => {
         setIsLoading(true);
 
         try {
-            const response = await fetch('http://localhost:5006/api/chat', {
+            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5006';
+            const response = await fetch(`${API_URL}/api/chat`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
