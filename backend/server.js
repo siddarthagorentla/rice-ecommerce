@@ -7,7 +7,7 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5006;
 
 app.use(cors());
 app.use(express.json());
@@ -150,7 +150,7 @@ app.post('/api/estimate', async (req, res) => {
 
     try {
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+        const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
 
         const prompt = `Estimate the wholesale price for ${quantity} quintals of "${riceType}" rice from the ${region} region of India during the ${season} season. Provide the total estimated price in INR, the price per quintal in INR, and a brief justification for the price based on factors like rice type, grade, region, season, and market trends. Return the response as a JSON object with keys: estimatedPriceINR (number), pricePerQuintal (number), reason (string).`;
 
@@ -189,34 +189,39 @@ app.post('/api/chat', async (req, res) => {
     }
 
     try {
-        const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-
-        // Transform messages for Gemini (GoogleGenerativeAI expects 'user' and 'model' roles)
-        const history = messages.slice(0, -1).map(msg => ({
-            role: msg.role === 'bot' ? 'model' : 'user',
-            parts: [{ text: msg.text }]
-        }));
-
-        const lastMessage = messages[messages.length - 1].text;
-
         // Inject Traceability Data into System Prompt
         const traceabilityContext = Object.values(traceabilityData).slice(0, 5).map(t => `- Batch ID ${t.batchId} for ${t.productName} was harvested on ${t.farm.harvestDate} from ${t.farm.name}.`).join('\n');
         const fullSystemPrompt = `${systemPrompt}\n\nSample Traceability Data (Backend Injected):\n${traceabilityContext}`;
 
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const model = genAI.getGenerativeModel({
+            model: "gemini-flash-latest",
+            systemInstruction: fullSystemPrompt
+        });
+
+        // Transform messages for Gemini (GoogleGenerativeAI expects 'user' and 'model' roles)
+        // Roles MUST alternate and history should ideally start with 'user'.
+        // Our 'messages' starts with a bot greeting. To ensure alternation and start with 'user',
+        // we can take messages from index 1 if available, or just start fresh if it's the first user message.
+
+        let history = [];
+        if (messages.length > 2) {
+            // More than just Greeting + Current User Message
+            // messages = [BotGreeting, User1, Bot1, User2]
+            // We want everything before User2: [BotGreeting, User1, Bot1]
+            // But we must start history with 'user' for some models. 
+            // So we take [User1, Bot1]
+            history = messages.slice(1, -1).map(msg => ({
+                role: msg.role === 'bot' ? 'model' : 'user',
+                parts: [{ text: msg.text }]
+            }));
+        }
+
+        const lastMessage = messages[messages.length - 1].text;
+
         // Start chat with history
         const chat = model.startChat({
-            history: [
-                {
-                    role: "user",
-                    parts: [{ text: `System Instruction: ${fullSystemPrompt}` }],
-                },
-                {
-                    role: "model",
-                    parts: [{ text: "Understood. I am ready to assist as the MKRM AI Assistant." }],
-                },
-                ...history
-            ],
+            history: history,
             generationConfig: {
                 maxOutputTokens: 1000,
             },

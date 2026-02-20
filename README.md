@@ -1,7 +1,6 @@
+# 🌾 MKRM Rice - E-Commerce & Traceability Platform
 
-# 🌾 ECommerce - Rice Traceability
-
-A modern web application that ensures **end-to-end traceability of rice** from farms to consumers. It empowers stakeholders with transparency, accountability, and efficiency across the rice supply chain.
+A modern full-stack web application that enables **end-to-end traceability of rice** from farms to consumers, featuring an AI-powered chatbot, wholesale price estimator, and complete e-commerce functionality.
 
 🔗 **[Live Demo](https://entreprise-ecommerce-rice.vercel.app/)**
 
@@ -9,75 +8,136 @@ A modern web application that ensures **end-to-end traceability of rice** from f
 
 ## ✨ Features
 
-* **End-to-End Traceability**
-  Track each rice batch from its origin through processing, distribution, and to the final consumer.
-
-* **QR Code Integration**
-  Generate and scan QR codes to instantly view detailed traceability information for any product.
-
-* **User-Friendly Interface**
-  A clean and intuitive design accessible to farmers, distributors, and consumers alike.
-
-* **Secure Data Management**
-  Traceability data is encrypted and safely managed to maintain trust across the supply chain.
+* **E-Commerce Shop** — Browse and purchase premium rice varieties with a full cart and checkout flow.
+* **End-to-End Traceability** — Track each rice batch from origin through processing, logistics, and to the final consumer using Batch IDs.
+* **AI-Powered Price Estimator** — Get real-time wholesale price estimates powered by Google Gemini AI.
+* **Paddy-to-Rice Converter** — Calculate estimated yield and market value from raw paddy to finished rice products.
+* **AI Chatbot** — Context-aware assistant that can answer questions about products, traceability, and more.
+* **Simulated Email Notifications** — Order confirmation emails logged to the console.
+* **Persistent Cart & Orders** — Cart and order history survive page refreshes via localStorage.
+* **Responsive Design** — Works seamlessly on desktop and mobile devices.
 
 ---
 
 ## 🛠️ Tech Stack
 
-* **Frontend:** React + Vite
-* **AI Integration:** Google API key
-* **Markdown Rendering:** react-markdown
+| Layer | Technology |
+|-------|-----------|
+| **Frontend** | React 18, TypeScript, Vite |
+| **Backend** | Node.js, Express |
+| **AI Integration** | Google Generative AI (Gemini 1.5 Flash) |
+| **Styling** | Vanilla CSS with CSS Variables |
+| **Markdown** | react-markdown + remark-gfm |
 
 ---
 
 ## 🚀 Getting Started
 
-Follow these steps to set up the project locally.
+### Prerequisites
 
-### ✅ Prerequisites
+- [Node.js](https://nodejs.org/) (v18 or later)
+- npm (comes with Node.js)
+- A Google Gemini API Key ([Get one here](https://aistudio.google.com/apikey))
 
-Ensure you have **npm** installed:
-
-```sh
-npm install npm@latest -g
-```
-
-### ⚙️ Installation
+### Installation
 
 1. **Clone the repository**
 
    ```sh
-   git clone https://github.com/your_username_/Project-Name.git
+   git clone https://github.com/your-username/rice-ecommerce.git
+   cd rice-ecommerce
    ```
 
-2. **Install dependencies**
+2. **Install frontend dependencies**
 
    ```sh
    npm install
    ```
 
-3. **Start the development server**
+3. **Install backend dependencies**
 
    ```sh
+   cd backend
+   npm install
+   ```
+
+4. **Configure environment variables**
+
+   ```sh
+   # In the backend/ directory, copy the example and add your key
+   cp .env.example .env
+   # Edit .env and add your GEMINI_API_KEY
+   ```
+
+5. **Start the development server** (runs both frontend & backend)
+
+   ```sh
+   # From the project root
    npm run dev
    ```
 
----
-
-## 🌍 Live Demo
-
-Check out the live version here:
-👉 [https://entreprise-ecommerce-rice.vercel.app/](https://entreprise-ecommerce-rice.vercel.app/)
+   - Frontend: http://localhost:5173
+   - Backend API: http://localhost:5006
 
 ---
 
+## 📁 Project Structure
+
+```
+rice-ecommerce/
+├── index.html          # Entry HTML file
+├── index.tsx           # Main React application (all components)
+├── index.css           # Global styles
+├── vite.config.ts      # Vite configuration
+├── package.json        # Frontend dependencies & scripts
+├── tsconfig.json       # TypeScript configuration
+├── backend/
+│   ├── server.js       # Express API server
+│   ├── data.csv        # 500 batch IDs for traceability
+│   ├── package.json    # Backend dependencies
+│   ├── .env            # Environment variables (not committed)
+│   └── .env.example    # Environment variable template
+├── DEPLOYMENT.md       # Deployment guide for Render.com
+└── README.md           # This file
+```
+
+---
+
+## 🔑 Environment Variables
+
+| Variable | Location | Description |
+|----------|----------|-------------|
+| `GEMINI_API_KEY` | `backend/.env` | Google Gemini API key for AI features |
+| `PORT` | `backend/.env` | Backend server port (default: 5006) |
+| `VITE_API_URL` | Frontend env | Backend URL for production deployment |
+
+> **Note:** Without a `GEMINI_API_KEY`, AI features (Price Estimator, Chatbot) will fall back to mock/simulated responses. The rest of the app works fully without it.
+
+---
+
+## 🧪 Testing
+
+Ad-hoc test scripts are available:
+
+```sh
+# Test traceability endpoint (backend must be running)
+node test_backend.js
+
+# Test AI endpoints (backend must be running with API key)
+node test_ai.js
+```
+
+---
+
+## 🌍 Deployment
+
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed instructions on deploying to Render.com.
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! If you’d like to improve this project:
+Contributions are welcome! If you'd like to improve this project:
 
 1. Fork the repo
 2. Create a new branch (`git checkout -b feature/YourFeature`)
@@ -90,5 +150,3 @@ Contributions are welcome! If you’d like to improve this project:
 ## 📜 License
 
 Distributed under the MIT License. See `LICENSE` for more information.
-
----
