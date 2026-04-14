@@ -4,6 +4,7 @@ const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+const { google } = require('googleapis');
 require('dotenv').config();
 
 const app = express();
@@ -240,6 +241,60 @@ app.post('/api/chat', async (req, res) => {
             text: "I apologize, but I am currently unable to connect to the AI service. However, I can tell you that MKRM Rice offers premium Sona Masoori, Basmati, and other varieties. Please check the Shop page for current prices.",
             sources: []
         });
+    }
+});
+
+app.post('/api/orders', async (req, res) => {
+    const orderData = req.body;
+    
+    try {
+        // Authenticate with Google Sheets using credentials from .env
+        const auth = new google.auth.GoogleAuth({
+            credentials: {
+                client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+                private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+            },
+            scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+        });
+
+        const sheets = google.sheets({ version: 'v4', auth });
+        const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+
+        // Ensure variables are available
+        if (!spreadsheetId || !process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL) {
+            console.error("Google Sheets credentials missing from .env");
+            return res.status(500).json({ error: "Server database configuration is incomplete." });
+        }
+
+        const itemsString = orderData.items.map(item => `${item.quantity}x ${item.name}`).join(', ');
+
+        const response = await sheets.spreadsheets.values.append({
+            spreadsheetId,
+            range: 'Sheet1!A:K', // Adjust sheet name as needed
+            valueInputOption: 'USER_ENTERED',
+            requestBody: {
+                values: [
+                    [
+                        orderData.id,
+                        orderData.date,
+                        orderData.shippingDetails.name,
+                        orderData.shippingDetails.email,
+                        orderData.shippingDetails.phone,
+                        orderData.shippingDetails.address,
+                        orderData.shippingDetails.city,
+                        orderData.shippingDetails.state,
+                        orderData.shippingDetails.zip,
+                        itemsString,
+                        orderData.total
+                    ],
+                ]
+            }
+        });
+
+        res.status(201).json({ message: 'Order created and saved to database successfully', orderId: orderData.id });
+    } catch (error) {
+        console.error("Error saving to Google Sheets:", error);
+        res.status(500).json({ error: "Failed to save order to database." });
     }
 });
 

@@ -60,7 +60,7 @@ const App: React.FC = () => {
         });
     };
 
-    const placeOrder = (customerDetails: CustomerDetails) => {
+    const placeOrder = async (customerDetails: CustomerDetails) => {
         const subtotal = cart.reduce((sum, item) => sum + item.priceINR * item.quantity, 0);
         const taxes = subtotal * 0.18;
         const total = subtotal + taxes;
@@ -74,6 +74,22 @@ const App: React.FC = () => {
             total,
             shippingDetails: customerDetails
         };
+
+        try {
+            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5006';
+            const response = await fetch(`${API_URL}/api/orders`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newOrder)
+            });
+
+            if (!response.ok) {
+                console.error('Failed to save order to the server database');
+            }
+        } catch (error) {
+            console.error('Error saving order to server database:', error);
+        }
+
         setOrders(prevOrders => [newOrder, ...prevOrders]);
         setCart([]);
         EmailService.sendOrderConfirmation(customerDetails, newOrder);
